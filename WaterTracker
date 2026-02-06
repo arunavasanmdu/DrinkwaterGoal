@@ -602,9 +602,9 @@
         const INCREMENT = 8;
         
         const defaultParticipants = [
-            'Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey',
-            'Riley', 'Avery', 'Quinn', 'Sage', 'River',
-            'Dakota', 'Skyler'
+            'Aruna', 'Devaki', 'Gowri', 'Kavitha', 'Lakshmi',
+            'Nithya', 'Priya', 'Sharmila', 'Subha', 'Sujatha',
+            'Usha', 'Vidya'
         ];
         
         let participants = [];
