@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💧 64oz Water Challenge</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --aqua: #00d4ff;
+            --deep-blue: #0066cc;
+            --ocean: #004d99;
+            --foam: #e6f7ff;
+            --wave: #80e5ff;
+            --dark: #002b4d;
+            --success: #00cc88;
+            --warning: #ffaa00;
+        }
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #004d99 0%, #00264d 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated water bubbles background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(128, 229, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(0, 212, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        
+        .subtitle {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--wave);
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .date-display {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 1rem;
+            color: white;
+            font-family: 'Space Mono', monospace;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .winners-banner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 193, 7, 0.95));
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.4);
+            animation: fadeIn 0.8s ease-out 0.3s both;
+            border: 3px solid rgba(255, 215, 0, 0.5);
+        }
+        
+        .winners-banner.hidden {
+            display: none;
+        }
+        
+        .winners-banner h2 {
+            color: #804d00;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+        }
+        
+        .winners-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .winner-tag {
+            background: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 700;
+            color: #804d00;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: bounceIn 0.6s ease-out both;
+        }
+        
+        .winner-tag .trophy {
+            font-size: 1.5rem;
+            animation: rotate 3s ease-in-out infinite;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+        
+        .controls h2 {
+            color: var(--ocean);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        select {
+            padding: 1rem 1.5rem;
+            border: 3px solid var(--deep-blue);
+            border-radius: 16px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        select:hover {
+            border-color: var(--aqua);
+            transform: translateY(-2px);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--aqua);
+            box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2);
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, var(--aqua), var(--deep-blue));
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #ff6b6b, #ee5555);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--deep-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--ocean);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            animation: fadeIn 1.2s ease-out 0.6s both;
+        }
+        
+        .participant-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .participant-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--aqua), var(--deep-blue));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .participant-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .participant-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .participant-card.goal-reached {
+            border: 3px solid var(--success);
+            background: linear-gradient(135deg, rgba(0, 204, 136, 0.05), rgba(255, 255, 255, 0.95));
+        }
+        
+        .participant-card.goal-reached::before {
+            background: var(--success);
+            transform: scaleX(1);
+        }
+        
+        .participant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .participant-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .participant-intake {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--deep-blue);
+        }
+        
+        .goal-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .halfway-badge {
+            background: linear-gradient(135deg, #ffaa00, #ff8800);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .progress-bar {
+            background: var(--foam);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--aqua), var(--deep-blue));
+            border-radius: 15px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        .participant-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.8rem;
+            border: 2px solid var(--deep-blue);
+            background: white;
+            border-radius: 12px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            color: var(--deep-blue);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            background: var(--deep-blue);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.4s ease-out 0.8s both;
+        }
+        
+        .leaderboard h2 {
+            color: var(--ocean);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            text-align: center;
+        }
+        
+        .leaderboard-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 12px;
+            border-left: 4px solid var(--deep-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .leaderboard-item.top-1 {
+            border-left-color: #FFD700;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), white);
+        }
+        
+        .leaderboard-item.top-2 {
+            border-left-color: #C0C0C0;
+            background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), white);
+        }
+        
+        .leaderboard-item.top-3 {
+            border-left-color: #CD7F32;
+            background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), white);
+        }
+        
+        .rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ocean);
+            text-align: center;
+        }
+        
+        .rank.top-1 { color: #FFD700; }
+        .rank.top-2 { color: #C0C0C0; }
+        .rank.top-3 { color: #CD7F32; }
+        
+        .leaderboard-name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+        
+        .leaderboard-intake {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            color: var(--deep-blue);
+            font-size: 1.2rem;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .subtitle { font-size: 1rem; }
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            .participants-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💧 64oz Water Challenge</h1>
+            <div class="subtitle">Daily Hydration Tracker</div>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+        
+        <div class="winners-banner hidden" id="winnersBanner">
+            <h2>🏆 Today's Goal Champions! 🏆</h2>
+            <div class="winners-list" id="winnersList"></div>
+        </div>
+        
+        <div class="controls">
+            <h2>Add Water Intake</h2>
+            <div class="input-group">
+                <select id="participantSelect">
+                    <option value="">Select Participant</option>
+                </select>
+                <button class="btn btn-add" onclick="addWater()">💧 Add 8oz</button>
+                <button class="btn btn-reset" onclick="resetToday()">🔄 Reset Today</button>
+            </div>
+        </div>
+        
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-value" id="totalParticipants">12</div>
+                <div class="stat-label">Total Participants</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="goalReached">0</div>
+                <div class="stat-label">Goals Reached Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalWater">0oz</div>
+                <div class="stat-label">Total Water Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgIntake">0oz</div>
+                <div class="stat-label">Average Intake</div>
+            </div>
+        </div>
+        
+        <div class="participants-grid" id="participantsGrid"></div>
+        
+        <div class="leaderboard">
+            <h2>🏆 Today's Leaderboard</h2>
+            <div id="leaderboardList"></div>
+        </div>
+    </div>
+    
+    <script>
+        const GOAL = 64;
+        const INCREMENT = 8;
+        
+        const defaultParticipants = [
+            'Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey',
+            'Riley', 'Avery', 'Quinn', 'Sage', 'River',
+            'Dakota', 'Skyler'
+        ];
+        
+        let participants = [];
+        
+        function initializeData() {
+            const today = new Date().toDateString();
+            const storedData = localStorage.getItem('waterChallenge');
+            
+            if (storedData) {
+                const data = JSON.parse(storedData);
+                if (data.date === today) {
+                    participants = data.participants;
+                } else {
+                    // New day, reset intakes but keep names
+                    participants = data.participants.map(p => ({
+                        ...p,
+                        intake: 0
+                    }));
+                    saveData();
+                }
+            } else {
+                // First time, initialize with default participants
+                participants = defaultParticipants.map(name => ({
+                    name: name,
+                    intake: 0
+                }));
+                saveData();
+            }
+        }
+        
+        function saveData() {
+            const today = new Date().toDateString();
+            localStorage.setItem('waterChallenge', JSON.stringify({
+                date: today,
+                participants: participants
+            }));
+        }
+        
+        function updateDisplay() {
+            const select = document.getElementById('participantSelect');
+            select.innerHTML = '<option value="">Select Participant</option>';
+            participants.forEach((p, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = p.name;
+                select.appendChild(option);
+            });
+            
+            updateStats();
+            renderParticipants();
+            renderWinners();
+            renderLeaderboard();
+        }
+        
+        function renderWinners() {
+            const winners = participants.filter(p => p.intake >= GOAL);
+            const banner = document.getElementById('winnersBanner');
+            const list = document.getElementById('winnersList');
+            
+            if (winners.length > 0) {
+                banner.classList.remove('hidden');
+                list.innerHTML = '';
+                
+                winners.forEach((winner, index) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'winner-tag';
+                    tag.style.animationDelay = `${index * 0.1}s`;
+                    tag.innerHTML = `
+                        <span class="trophy">🏆</span>
+                        <span>${winner.name}</span>
+                    `;
+                    list.appendChild(tag);
+                });
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+        
+        function updateStats() {
+            const goalReached = participants.filter(p => p.intake >= GOAL).length;
+            const totalWater = participants.reduce((sum, p) => sum + p.intake, 0);
+            const avgIntake = Math.round(totalWater / participants.length);
+            
+            document.getElementById('totalParticipants').textContent = participants.length;
+            document.getElementById('goalReached').textContent = goalReached;
+            document.getElementById('totalWater').textContent = totalWater + 'oz';
+            document.getElementById('avgIntake').textContent = avgIntake + 'oz';
+        }
+        
+        function renderParticipants() {
+            const grid = document.getElementById('participantsGrid');
+            grid.innerHTML = '';
+            
+            participants.forEach((participant, index) => {
+                const progress = Math.min((participant.intake / GOAL) * 100, 100);
+                const isGoalReached = participant.intake >= GOAL;
+                const isHalfwayReached = participant.intake >= 32 && participant.intake < GOAL;
+                
+                const card = document.createElement('div');
+                card.className = `participant-card ${isGoalReached ? 'goal-reached' : ''}`;
+                card.innerHTML = `
+                    <div class="participant-header">
+                        <div class="participant-name">${participant.name}</div>
+                        <div class="participant-intake">${participant.intake}oz / ${GOAL}oz</div>
+                    </div>
+                    ${isGoalReached ? '<div class="goal-badge">✨ Goal Reached!</div>' : ''}
+                    ${isHalfwayReached ? '<div class="halfway-badge">⭐ Halfway There!</div>' : ''}
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="participant-actions">
+                        <button class="action-btn" onclick="addWaterTo(${index}, 8)">+8oz</button>
+                        <button class="action-btn" onclick="addWaterTo(${index}, 16)">+16oz</button>
+                        <button class="action-btn" onclick="resetParticipant(${index})">Reset</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderLeaderboard() {
+            const sorted = [...participants].sort((a, b) => b.intake - a.intake);
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '';
+            
+            sorted.forEach((participant, index) => {
+                const rank = index + 1;
+                const item = document.createElement('div');
+                item.className = `leaderboard-item ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}`;
+                item.innerHTML = `
+                    <div class="rank ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">#${rank}</div>
+                    <div class="leaderboard-name">${participant.name}</div>
+                    <div class="leaderboard-intake">${participant.intake}oz</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        function addWater() {
+            const select = document.getElementById('participantSelect');
+            const index = select.value;
+            
+            if (index === '') {
+                alert('Please select a participant');
+                return;
+            }
+            
+            addWaterTo(parseInt(index), INCREMENT);
+        }
+        
+        function addWaterTo(index, amount) {
+            participants[index].intake += amount;
+            saveData();
+            updateDisplay();
+        }
+        
+        function resetParticipant(index) {
+            if (confirm(`Reset ${participants[index].name}'s water intake for today?`)) {
+                participants[index].intake = 0;
+                saveData();
+                updateDisplay();
+            }
+        }
+        
+        function resetToday() {
+            if (confirm('Reset all participants for today? This cannot be undone.')) {
+                participants = participants.map(p => ({
+                    ...p,
+                    intake: 0
+                }));
+                saveData();
+                updateDisplay();
+            }
+        }
+        
+        function updateDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('en-US', options);
+            document.getElementById('currentDate').textContent = today;
+        }
+        
+        // Initialize
+        updateDate();
+        initializeData();
+        updateDisplay();
+    </script>
+</body>
+</html>
