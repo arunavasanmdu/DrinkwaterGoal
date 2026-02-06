@@ -33,7 +33,6 @@
             overflow-x: hidden;
         }
         
-        /* Animated water bubbles background */
         body::before {
             content: '';
             position: fixed;
@@ -92,6 +91,24 @@
             border: 2px solid rgba(0, 212, 255, 0.3);
         }
         
+        .sync-status {
+            background: rgba(0, 204, 136, 0.2);
+            color: #00ff88;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            border: 1px solid rgba(0, 204, 136, 0.4);
+        }
+        
+        .sync-status.syncing {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+            border-color: rgba(255, 170, 0, 0.4);
+        }
+        
         .winners-banner {
             background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 193, 7, 0.95));
             backdrop-filter: blur(10px);
@@ -139,29 +156,6 @@
         .winner-tag .trophy {
             font-size: 1.5rem;
             animation: rotate 3s ease-in-out infinite;
-        }
-        
-        @keyframes bounceIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.3);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.05);
-            }
-            70% {
-                transform: scale(0.9);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-        
-        @keyframes rotate {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
         }
         
         .controls {
@@ -234,15 +228,15 @@
             box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
         }
         
-        .btn-reset {
-            background: linear-gradient(135deg, #ff6b6b, #ee5555);
+        .btn-refresh {
+            background: linear-gradient(135deg, #00cc88, #00aa66);
             color: white;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 204, 136, 0.3);
         }
         
-        .btn-reset:hover {
+        .btn-refresh:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(255, 107, 107, 0.5);
+            box-shadow: 0 6px 25px rgba(0, 204, 136, 0.5);
         }
         
         .stats-overview {
@@ -403,7 +397,7 @@
         
         .participant-actions {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 0.5rem;
         }
         
@@ -534,6 +528,29 @@
             50% { transform: scale(1.05); }
         }
         
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
         @media (max-width: 768px) {
             h1 { font-size: 2.5rem; }
             .subtitle { font-size: 1rem; }
@@ -552,6 +569,7 @@
             <h1>💧 64oz Water Challenge</h1>
             <div class="subtitle">Daily Hydration Tracker</div>
             <div class="date-display" id="currentDate"></div>
+            <span class="sync-status" id="syncStatus">🔄 Syncing...</span>
         </header>
         
         <div class="winners-banner hidden" id="winnersBanner">
@@ -566,7 +584,7 @@
                     <option value="">Select Participant</option>
                 </select>
                 <button class="btn btn-add" onclick="addWater()">💧 Add 8oz</button>
-                <button class="btn btn-reset" onclick="resetToday()">🔄 Reset Today</button>
+                <button class="btn btn-refresh" onclick="loadData()">🔄 Refresh</button>
             </div>
         </div>
         
@@ -598,49 +616,53 @@
     </div>
     
     <script>
+        // Google Apps Script Web App URL - ALREADY CONFIGURED
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQC43V7MLiPnE9i6GL-GM_jyt3pJgexDOZdjcVQlFqJ5KMxzgXB_F6LNCqltm5WW6UMQ/exec';
+        
         const GOAL = 64;
         const INCREMENT = 8;
         
-        const defaultParticipants = [
-            'Aruna', 'Devaki', 'Gowri', 'Kavitha', 'Lakshmi',
-            'Nithya', 'Priya', 'Sharmila', 'Subha', 'Sujatha',
-            'Usha', 'Vidya'
-        ];
-        
         let participants = [];
         
-        function initializeData() {
-            const today = new Date().toDateString();
-            const storedData = localStorage.getItem('waterChallenge');
+        // Load data from Google Sheets
+        async function loadData() {
+            const syncStatus = document.getElementById('syncStatus');
+            syncStatus.textContent = '🔄 Syncing...';
+            syncStatus.classList.add('syncing');
             
-            if (storedData) {
-                const data = JSON.parse(storedData);
-                if (data.date === today) {
-                    participants = data.participants;
-                } else {
-                    // New day, reset intakes but keep names
-                    participants = data.participants.map(p => ({
-                        ...p,
-                        intake: 0
-                    }));
-                    saveData();
-                }
-            } else {
-                // First time, initialize with default participants
-                participants = defaultParticipants.map(name => ({
-                    name: name,
-                    intake: 0
-                }));
-                saveData();
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                participants = data;
+                updateDisplay();
+                
+                syncStatus.textContent = '✓ Synced';
+                syncStatus.classList.remove('syncing');
+            } catch (error) {
+                console.error('Error loading data:', error);
+                syncStatus.textContent = '✗ Sync Failed';
+                alert('Could not connect to server. Make sure Google Sheets is set up correctly.');
             }
         }
         
-        function saveData() {
-            const today = new Date().toDateString();
-            localStorage.setItem('waterChallenge', JSON.stringify({
-                date: today,
-                participants: participants
-            }));
+        // Save data to Google Sheets
+        async function saveData(name, intake) {
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, intake })
+                });
+                
+                // Reload data after saving
+                setTimeout(loadData, 500);
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('Could not save data. Please try again.');
+            }
         }
         
         function updateDisplay() {
@@ -657,6 +679,17 @@
             renderParticipants();
             renderWinners();
             renderLeaderboard();
+        }
+        
+        function updateStats() {
+            const goalReached = participants.filter(p => p.intake >= GOAL).length;
+            const totalWater = participants.reduce((sum, p) => sum + p.intake, 0);
+            const avgIntake = Math.round(totalWater / participants.length);
+            
+            document.getElementById('totalParticipants').textContent = participants.length;
+            document.getElementById('goalReached').textContent = goalReached;
+            document.getElementById('totalWater').textContent = totalWater + 'oz';
+            document.getElementById('avgIntake').textContent = avgIntake + 'oz';
         }
         
         function renderWinners() {
@@ -683,17 +716,6 @@
             }
         }
         
-        function updateStats() {
-            const goalReached = participants.filter(p => p.intake >= GOAL).length;
-            const totalWater = participants.reduce((sum, p) => sum + p.intake, 0);
-            const avgIntake = Math.round(totalWater / participants.length);
-            
-            document.getElementById('totalParticipants').textContent = participants.length;
-            document.getElementById('goalReached').textContent = goalReached;
-            document.getElementById('totalWater').textContent = totalWater + 'oz';
-            document.getElementById('avgIntake').textContent = avgIntake + 'oz';
-        }
-        
         function renderParticipants() {
             const grid = document.getElementById('participantsGrid');
             grid.innerHTML = '';
@@ -718,7 +740,6 @@
                     <div class="participant-actions">
                         <button class="action-btn" onclick="addWaterTo(${index}, 8)">+8oz</button>
                         <button class="action-btn" onclick="addWaterTo(${index}, 16)">+16oz</button>
-                        <button class="action-btn" onclick="resetParticipant(${index})">Reset</button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -756,28 +777,9 @@
         }
         
         function addWaterTo(index, amount) {
-            participants[index].intake += amount;
-            saveData();
-            updateDisplay();
-        }
-        
-        function resetParticipant(index) {
-            if (confirm(`Reset ${participants[index].name}'s water intake for today?`)) {
-                participants[index].intake = 0;
-                saveData();
-                updateDisplay();
-            }
-        }
-        
-        function resetToday() {
-            if (confirm('Reset all participants for today? This cannot be undone.')) {
-                participants = participants.map(p => ({
-                    ...p,
-                    intake: 0
-                }));
-                saveData();
-                updateDisplay();
-            }
+            const participant = participants[index];
+            const newIntake = participant.intake + amount;
+            saveData(participant.name, newIntake);
         }
         
         function updateDate() {
@@ -788,8 +790,10 @@
         
         // Initialize
         updateDate();
-        initializeData();
-        updateDisplay();
+        loadData();
+        
+        // Auto-refresh every 30 seconds to see others' updates
+        setInterval(loadData, 30000);
     </script>
 </body>
 </html>
